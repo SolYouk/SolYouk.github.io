@@ -1,0 +1,125 @@
+let board = Array(3).fill().map(() => Array(3).fill(0));
+let currentPlayer = 1; // 1: 플레이어, -1: AI
+let difficulty = "low";
+
+function setDifficulty(level) {
+    difficulty = level;
+    alert(`난이도가 ${level}로 설정되었습니다.`);
+}
+
+function startGame() {
+    document.getElementById("home").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    initializeBoard();
+}
+
+function initializeBoard() {
+    const boardContainer = document.getElementById("board");
+    boardContainer.innerHTML = "";
+    board = Array(3).fill().map(() => Array(3).fill(0));
+    currentPlayer = 1;
+
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            const cell = document.createElement("div");
+            cell.classList.add("cell");
+            cell.addEventListener("click", () => playerMove(i, j));
+            boardContainer.appendChild(cell);
+        }
+    }
+}
+
+function playerMove(x, y) {
+    if (board[x][y] !== 0 || currentPlayer !== 1) return;
+
+    board[x][y] = 1;
+    renderBoard();
+
+    if (checkWin(1)) {
+        alert("플레이어 승리!");
+        resetGame();
+        return;
+    }
+
+    if (isDraw()) {
+        alert("무승부!");
+        resetGame();
+        return;
+    }
+
+    currentPlayer = -1;
+    setTimeout(aiMove, 500);
+}
+
+function aiMove() {
+    let move;
+    if (difficulty === "low") {
+        move = randomMove();
+    } else if (difficulty === "medium") {
+        move = minimax(board, 1, -1); // 깊이 제한
+    } else {
+        move = minimax(board, 0, -1);
+    }
+
+    board[move.x][move.y] = -1;
+    renderBoard();
+
+    if (checkWin(-1)) {
+        alert("AI 승리!");
+        resetGame();
+        return;
+    }
+
+    if (isDraw()) {
+        alert("무승부!");
+        resetGame();
+        return;
+    }
+
+    currentPlayer = 1;
+}
+
+function randomMove() {
+    const emptyCells = [];
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (board[i][j] === 0) emptyCells.push({ x: i, y: j });
+        }
+    }
+    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+}
+
+function minimax(board, depth, player) {
+    // Minimax 알고리즘의 단순화 버전입니다
+    // 실제 구현은 여기서 설명된 내용을 참고하여 추가하세요
+    // 여기에 AI 최적화 코드를 추가할 수 있습니다
+}
+
+function renderBoard() {
+    const cells = document.querySelectorAll(".cell");
+    cells.forEach((cell, index) => {
+        const x = Math.floor(index / 3);
+        const y = index % 3;
+        cell.textContent = board[x][y] === 1 ? "O" : board[x][y] === -1 ? "X" : "";
+    });
+}
+
+function checkWin(player) {
+    for (let i = 0; i < 3; i++) {
+        if (board[i][0] === player && board[i][1] === player && board[i][2] === player) return true;
+        if (board[0][i] === player && board[1][i] === player && board[2][i] === player) return true;
+    }
+    if (board[0][0] === player && board[1][1] === player && board[2][2] === player) return true;
+    if (board[0][2] === player && board[1][1] === player && board[2][0] === player) return true;
+    return false;
+}
+
+function isDraw() {
+    return board.flat().every(cell => cell !== 0);
+}
+
+function resetGame() {
+    document.getElementById("home").style.display = "block";
+    document.getElementById("game").style.display = "none";
+    initializeBoard();
+}
